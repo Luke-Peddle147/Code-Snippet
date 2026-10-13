@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import type { PanelMode, SnippetFilters, SnippetInput } from "@/types/snippet";
 import { DEFAULT_FILTERS, filterSnippets, hasActiveFilters } from "../lib/filterSnippets";
 import {
@@ -8,6 +9,8 @@ import {
   useToggleFavorite,
   useUpdateSnippet,
 } from "./useSnippets";
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 export function useSnippetLibrary() {
   const { snippets, loading, error, retry } = useSnippets();
@@ -20,7 +23,18 @@ export function useSnippetLibrary() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [mode, setMode] = useState<PanelMode>("view");
 
-  const visibleSnippets = filterSnippets(snippets, filters);
+  const debouncedSearch = useDebouncedValue(filters.search, SEARCH_DEBOUNCE_MS);
+  const appliedSearch = filters.search === "" ? "" : debouncedSearch;
+
+  const visibleSnippets = useMemo(
+    () =>
+      filterSnippets(snippets, {
+        search: appliedSearch,
+        language: filters.language,
+        favoritesOnly: filters.favoritesOnly,
+      }),
+    [snippets, appliedSearch, filters.language, filters.favoritesOnly]
+  );
   const selected = snippets.find((snippet) => snippet.id === selectedId) ?? null;
 
   const select = (snippetId: number) => {

@@ -49,7 +49,7 @@ export function SnippetDetail({
       <header className="space-y-4 p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight break-words">{snippet.title}</h2>
+            <h2 className="text-2xl font-semibold tracking-tight wrap-break-word">{snippet.title}</h2>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
               <LanguageLabel language={snippet.language} className="font-medium text-foreground/80" />
               <span>
@@ -164,7 +164,7 @@ function CodeBlock({ code, language }: CodeBlockProps) {
       </div>
 
       <div className="max-h-[65vh] overflow-auto">
-        <pre className="flex min-w-max py-4 font-mono text-[13px] leading-6 [tab-size:2]">
+        <pre className="flex min-w-max py-4 font-mono text-[13px] leading-6 tab-size:2">
           <span
             aria-hidden
             className="sticky left-0 border-r border-zinc-800/80 bg-zinc-950 px-4 text-right text-zinc-600 select-none"

@@ -114,7 +114,7 @@ export function SnippetForm({ initial, submitting, error, onSubmit, onCancel }: 
             autoCapitalize="off"
             autoCorrect="off"
             placeholder="// paste or write your snippet here"
-            className="min-h-72 resize-y border-zinc-800 bg-zinc-950 font-mono text-[13px] leading-6 text-zinc-100 shadow-inner [tab-size:2] placeholder:text-zinc-500 focus-visible:border-zinc-600 focus-visible:ring-zinc-500/30"
+            className="min-h-72 resize-y border-zinc-800 bg-zinc-950 font-mono text-[13px] leading-6 text-zinc-100 shadow-inner tab-size:2 placeholder:text-zinc-500 focus-visible:border-zinc-600 focus-visible:ring-zinc-500/30"
           />
         </div>
 
