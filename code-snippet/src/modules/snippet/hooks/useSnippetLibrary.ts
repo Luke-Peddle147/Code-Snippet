@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useState } from "react";
 import type { PanelMode, SnippetFilters, SnippetInput } from "@/types/snippet";
 import { DEFAULT_FILTERS, filterSnippets, hasActiveFilters } from "../lib/filterSnippets";
 import {
@@ -8,8 +8,6 @@ import {
   useToggleFavorite,
   useUpdateSnippet,
 } from "./useSnippets";
-
-const MOBILE_QUERY = "(max-width: 1023px)";
 
 export function useSnippetLibrary() {
   const { snippets, loading, error, retry } = useSnippets();
@@ -21,29 +19,19 @@ export function useSnippetLibrary() {
   const [filters, setFilters] = useState<SnippetFilters>(DEFAULT_FILTERS);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [mode, setMode] = useState<PanelMode>("view");
-  const panelRef = useRef<HTMLDivElement>(null);
 
-  const visibleSnippets = useMemo(() => filterSnippets(snippets, filters), [snippets, filters]);
+  const visibleSnippets = filterSnippets(snippets, filters);
   const selected = snippets.find((snippet) => snippet.id === selectedId) ?? null;
-
-  const revealPanel = () => {
-    if (!window.matchMedia(MOBILE_QUERY).matches) return;
-    requestAnimationFrame(() =>
-      panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-    );
-  };
 
   const select = (snippetId: number) => {
     deleteSnippet.resetError();
     setSelectedId(snippetId);
     setMode("view");
-    revealPanel();
   };
 
   const startCreate = () => {
     createSnippet.resetError();
     setMode("create");
-    revealPanel();
   };
 
   const startEdit = () => {
@@ -73,7 +61,6 @@ export function useSnippetLibrary() {
   };
 
   return {
-    panelRef,
     list: {
       snippets: visibleSnippets,
       totalCount: snippets.length,

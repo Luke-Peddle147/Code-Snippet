@@ -2,7 +2,7 @@
 
 import { MousePointerClick } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useSnippetLibrary } from "../hooks/useSnippetLibarey";
+import { useSnippetLibrary } from "../hooks/useSnippetLibrary";
 import { SnippetDetail } from "./detail/SnippetDetail";
 import { SnippetForm } from "./form/SnippetForm";
 import { SnippetList } from "./list/SnippetList";
@@ -10,7 +10,6 @@ import { SnippetToolbar } from "./toolbar/SnippetToolbar";
 
 export function SnippetLibrary() {
   const {
-    panelRef,
     list,
     filters,
     selection,
@@ -81,7 +80,7 @@ export function SnippetLibrary() {
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)]">
+      <div className="grid grid-cols-[400px_minmax(0,1fr)] items-start gap-6">
         <SnippetList
           snippets={list.snippets}
           totalCount={list.totalCount}
@@ -97,7 +96,7 @@ export function SnippetLibrary() {
           onCreate={actions.startCreate}
         />
 
-        <div ref={panelRef} className="scroll-mt-6 lg:sticky lg:top-6">
+        <div className="sticky top-6">
           {renderPanel()}
         </div>
       </div>
@@ -107,14 +106,13 @@ export function SnippetLibrary() {
 
 function EmptyPanel() {
   return (
-    <div className="hidden flex-col items-center justify-center rounded-xl border border-dashed bg-card/60 px-6 py-24 text-center lg:flex">
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed bg-card/60 px-6 py-24 text-center">
       <div className="flex size-12 items-center justify-center rounded-full bg-muted">
         <MousePointerClick className="size-5 text-muted-foreground" />
       </div>
       <p className="mt-4 font-medium">No snippet selected</p>
       <p className="mt-1 text-sm text-muted-foreground">
-        Pick one from the list, or press{" "}
-        <kbd className="rounded border bg-card px-1.5 font-mono text-xs">N</kbd> to create a new one.
+        Pick one from the list, or create a new one.
       </p>
     </div>
   );

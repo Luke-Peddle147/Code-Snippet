@@ -1,9 +1,9 @@
 import { Braces } from "lucide-react";
-import { SnippetLibrary } from "@/modules/snippet/components/SnippetLibray";
+import { SnippetLibrary } from "@/modules/snippet/components/SnippetLibrary";
 
 export default function HomePage() {
   return (
-    <div className="mx-auto max-w-360 space-y-8 px-4 py-8 md:px-8 md:py-10">
+    <div className="mx-auto max-w-360 space-y-8 px-8 py-10">
       <header className="flex items-center gap-4">
         <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
           <Braces className="size-6" />

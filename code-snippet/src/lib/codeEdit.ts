@@ -34,11 +34,17 @@ const moveCaret = (position: number): CodeEdit => ({
 const canAutoClose = (next: string | undefined) =>
   next === undefined || /\s/.test(next) || CLOSERS.has(next) || next === "," || next === ";";
 
-function getEnterEdit(value: string, start: number, end: number): CodeEdit {
+interface CursorContext {
+  value: string;
+  start: number;
+  end: number;
+  prev: string | undefined;
+  next: string | undefined;
+}
+
+function getEnterEdit({ value, start, end, prev, next }: CursorContext): CodeEdit {
   const lineStart = value.lastIndexOf("\n", start - 1) + 1;
   const indent = /^[ \t]*/.exec(value.slice(lineStart, start))?.[0] ?? "";
-  const prev = value[start - 1];
-  const next = value[end];
   const opensBlock = prev !== undefined && BLOCK_OPENERS.has(prev);
 
   if (opensBlock && next === PAIRS[prev]) {
@@ -62,7 +68,7 @@ export function getCodeEdit(key: string, value: string, start: number, end: numb
   const next = value[end];
   const hasSelection = start !== end;
 
-  if (key === "Enter") return getEnterEdit(value, start, end);
+  if (key === "Enter") return getEnterEdit({ value, start, end, prev, next });
 
   if (key === "Backspace") {
     if (hasSelection || prev === undefined || PAIRS[prev] !== next) return null;
@@ -90,13 +96,13 @@ export function getCodeEdit(key: string, value: string, start: number, end: numb
   return { from: start, to: end, text: `${key}${close}`, selectionStart: start + 1, selectionEnd: start + 1 };
 }
 
-function replaceSelection(textarea: HTMLTextAreaElement, text: string) {
-  textarea.setRangeText(text, textarea.selectionStart, textarea.selectionEnd, "end");
-  textarea.dispatchEvent(new Event("input", { bubbles: true }));
+function replaceSelection(text: string) {
+  if (text === "") document.execCommand("delete");
+  else document.execCommand("insertText", false, text);
 }
 
 export function handleCodeKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-  if (event.nativeEvent.isComposing || event.ctrlKey || event.metaKey || event.altKey) return;
+  if (event.ctrlKey || event.altKey) return;
 
   const textarea = event.currentTarget;
   const edit = getCodeEdit(event.key, textarea.value, textarea.selectionStart, textarea.selectionEnd);
@@ -106,7 +112,7 @@ export function handleCodeKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
 
   if (edit.from !== edit.to || edit.text !== "") {
     textarea.setSelectionRange(edit.from, edit.to);
-    replaceSelection(textarea, edit.text);
+    replaceSelection(edit.text);
   }
   textarea.setSelectionRange(edit.selectionStart, edit.selectionEnd);
 }

@@ -54,7 +54,7 @@ export function SnippetForm({ initial, submitting, error, onSubmit, onCancel }: 
       </header>
 
       <div className="space-y-5 px-6 py-5">
-        <div className="grid gap-4 sm:grid-cols-[1fr_13rem]">
+        <div className="grid grid-cols-[1fr_13rem] gap-4">
           <div className="space-y-2">
             <Label htmlFor={`${id}-title`}>Title</Label>
             <Input
@@ -126,7 +126,7 @@ export function SnippetForm({ initial, submitting, error, onSubmit, onCancel }: 
       </div>
 
       <footer className="flex items-center justify-between gap-3 border-t bg-muted/40 px-6 py-3">
-        <p className="hidden text-xs text-muted-foreground sm:block">
+        <p className="text-xs text-muted-foreground">
           <kbd className="rounded border bg-card px-1.5 font-mono">Ctrl</kbd> +{" "}
           <kbd className="rounded border bg-card px-1.5 font-mono">Enter</kbd> to save,{" "}
           <kbd className="rounded border bg-card px-1.5 font-mono">Esc</kbd> to cancel

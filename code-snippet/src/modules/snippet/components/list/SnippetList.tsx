@@ -157,7 +157,7 @@ function SnippetListItem({ snippet, selected, favorite, onSelect, onToggleFavori
         aria-label={favorite ? `Remove ${snippet.title} from favorites` : `Add ${snippet.title} to favorites`}
         className={cn(
           "m-2 shrink-0 transition-opacity",
-          !favorite && "sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+          !favorite && "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
         )}
       >
         <Star className={favorite ? "fill-amber-400 text-amber-500" : "text-muted-foreground"} />

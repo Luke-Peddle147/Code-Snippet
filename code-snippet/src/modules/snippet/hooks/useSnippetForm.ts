@@ -24,7 +24,7 @@ export function useSnippetForm({ initial, submitting, onSubmit, onCancel }: UseS
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
-    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+    if (event.key === "Enter" && event.ctrlKey) {
       event.preventDefault();
       event.currentTarget.requestSubmit();
     }
