@@ -18,7 +18,14 @@ import { Button } from "@/components/ui/button";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 import { formatDateTime, formatRelativeTime } from "@/lib/formatDate";
 import { cn } from "@/lib/utils";
-import { countLines, getLanguageLabel } from "../../lib/languages";
+import { countLines, getHighlightLanguage, getLanguageLabel } from "../../lib/languages";
+import {
+  codeBlockStyle,
+  codeTagStyle,
+  codeTheme,
+  lineNumberStyle,
+  SyntaxHighlighter,
+} from "@/lib/syntaxHighlighter";
 import type { Snippet } from "@/types/snippet";
 import { LanguageLabel } from "../LanguageLabel";
 
@@ -49,7 +56,7 @@ export function SnippetDetail({
       <header className="space-y-4 p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight wrap-break-word">{snippet.title}</h2>
+            <h2 className="text-2xl font-semibold tracking-tight break-words">{snippet.title}</h2>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
               <LanguageLabel language={snippet.language} className="font-medium text-foreground/80" />
               <span>
@@ -140,7 +147,6 @@ interface CodeBlockProps {
 
 function CodeBlock({ code, language }: CodeBlockProps) {
   const { copy, status } = useCopyToClipboard();
-  const lines = code.split("\n");
 
   return (
     <div className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 shadow-inner">
@@ -163,27 +169,16 @@ function CodeBlock({ code, language }: CodeBlockProps) {
         </span>
       </div>
 
-      <div className="max-h-[65vh] overflow-auto">
-        <pre className="flex min-w-max py-4 font-mono text-[13px] leading-6 tab-size:2">
-          <span
-            aria-hidden
-            className="sticky left-0 border-r border-zinc-800/80 bg-zinc-950 px-4 text-right text-zinc-600 select-none"
-          >
-            {lines.map((_, index) => (
-              <span key={index} className="block">
-                {index + 1}
-              </span>
-            ))}
-          </span>
-          <code className="pr-6 pl-4 text-zinc-100">
-            {lines.map((line, index) => (
-              <span key={index} className="block">
-                {line || " "}
-              </span>
-            ))}
-          </code>
-        </pre>
-      </div>
+      <SyntaxHighlighter
+        language={getHighlightLanguage(language)}
+        style={codeTheme}
+        customStyle={codeBlockStyle}
+        codeTagProps={{ style: codeTagStyle }}
+        lineNumberStyle={lineNumberStyle}
+        showLineNumbers
+      >
+        {code}
+      </SyntaxHighlighter>
     </div>
   );
 }

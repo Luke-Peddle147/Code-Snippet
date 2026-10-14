@@ -9,6 +9,8 @@ interface UseSnippetFormOptions {
   onCancel: () => void;
 }
 
+const ESCAPE_HANDLED_BY = '[role="listbox"]';
+
 export function useSnippetForm({ initial, submitting, onSubmit, onCancel }: UseSnippetFormOptions) {
   const [values, setValues] = useState<SnippetFormValues>(() => getInitialFormValues(initial));
 
@@ -24,12 +26,16 @@ export function useSnippetForm({ initial, submitting, onSubmit, onCancel }: UseS
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
-    if (event.key === "Enter" && event.ctrlKey) {
+    if (event.defaultPrevented) return;
+
+    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       event.currentTarget.requestSubmit();
+      return;
     }
+
     if (event.key === "Escape" && !submitting) {
-      if ((event.target as HTMLElement).closest('[role="listbox"]')) return;
+      if ((event.target as HTMLElement).closest(ESCAPE_HANDLED_BY)) return;
       onCancel();
     }
   };
