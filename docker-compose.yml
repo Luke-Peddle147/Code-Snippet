@@ -1,0 +1,13 @@
+services:
+  api:
+    build: ./api
+    ports:
+      - "3001:3001"
+    environment:
+      FRONTEND_URL: http://localhost:3000
+    volumes:
+      - api-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  api-data:
