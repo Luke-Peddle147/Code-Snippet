@@ -1,5 +1,7 @@
-import { useState, type FormEvent, type KeyboardEvent } from "react";
+import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import type { Snippet, SnippetFormValues, SnippetInput } from "@/types/snippet";
+import { detectLanguage } from "../lib/detectLanguage";
 import { getInitialFormValues, isFormComplete, toSnippetInput } from "../lib/snippetForm";
 
 interface UseSnippetFormOptions {
@@ -9,20 +11,43 @@ interface UseSnippetFormOptions {
   onCancel: () => void;
 }
 
+const DETECT_DELAY_MS = 400;
 const ESCAPE_HANDLED_BY = '[role="listbox"]';
 
 export function useSnippetForm({ initial, submitting, onSubmit, onCancel }: UseSnippetFormOptions) {
   const [values, setValues] = useState<SnippetFormValues>(() => getInitialFormValues(initial));
+  const [languagePicked, setLanguagePicked] = useState(initial !== undefined);
 
-  const setField = <K extends keyof SnippetFormValues>(field: K, value: SnippetFormValues[K]) =>
+  const debouncedCode = useDebouncedValue(values.code, DETECT_DELAY_MS);
+  const detection = useMemo(
+    () => (languagePicked ? null : detectLanguage(debouncedCode)),
+    [languagePicked, debouncedCode]
+  );
+
+  const detectedLanguage = detection?.status === "detected" ? detection.language : null;
+  const detectionFailed = detection?.status === "undetected";
+
+  const currentValues: SnippetFormValues = detectedLanguage
+    ? { ...values, language: detectedLanguage }
+    : values;
+  
+
+  const setField = <K extends keyof SnippetFormValues>(field: K, value: SnippetFormValues[K]) => {
+    if (field === "language") setLanguagePicked(true);
     setValues((current) => ({ ...current, [field]: value }));
+  };
 
-  const canSubmit = isFormComplete(values) && !submitting;
+  const canSubmit = isFormComplete(currentValues) && !submitting;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!canSubmit) return;
-    onSubmit(toSnippetInput(values));
+
+    const submitDetection = languagePicked ? null : detectLanguage(values.code);
+    const language =
+      submitDetection?.status === "detected" ? submitDetection.language : values.language;
+
+    onSubmit(toSnippetInput({ ...values, language }));
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
@@ -40,5 +65,13 @@ export function useSnippetForm({ initial, submitting, onSubmit, onCancel }: UseS
     }
   };
 
-  return { values, setField, canSubmit, handleSubmit, handleKeyDown };
+  return {
+    values: currentValues,
+    detectedLanguage,
+    detectionFailed,
+    setField,
+    canSubmit,
+    handleSubmit,
+    handleKeyDown,
+  };
 }

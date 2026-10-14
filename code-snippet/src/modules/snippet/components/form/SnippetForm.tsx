@@ -1,6 +1,7 @@
 "use client";
 
 import { useId } from "react";
+import { CircleHelp, Sparkles } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { handleCodeKeyDown } from "@/lib/codeEdit";
 import { useSnippetForm } from "../../hooks/useSnippetForm";
 import { LANGUAGES, type SnippetLanguage } from "../../lib/languages";
@@ -29,7 +31,15 @@ interface SnippetFormProps {
 
 export function SnippetForm({ initial, submitting, error, onSubmit, onCancel }: SnippetFormProps) {
   const id = useId();
-  const { values, setField, canSubmit, handleSubmit, handleKeyDown } = useSnippetForm({
+  const {
+    values,
+    detectedLanguage,
+    detectionFailed,
+    setField,
+    canSubmit,
+    handleSubmit,
+    handleKeyDown,
+  } = useSnippetForm({
     initial,
     submitting,
     onSubmit,
@@ -69,12 +79,24 @@ export function SnippetForm({ initial, submitting, error, onSubmit, onCancel }: 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor={`${id}-language`}>Language</Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor={`${id}-language`}>Language</Label>
+              {detectedLanguage && (
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <Sparkles className="size-3" />
+                  Auto-detected
+                </span>
+              )}
+            </div>
             <Select
               value={values.language}
               onValueChange={(value) => setField("language", value as SnippetLanguage)}
             >
-              <SelectTrigger id={`${id}-language`} className="w-full">
+              <SelectTrigger
+                id={`${id}-language`}
+                aria-describedby={detectionFailed ? `${id}-language-hint` : undefined}
+                className={cn("w-full", detectionFailed && "border-amber-400 ring-[3px] ring-amber-400/20")}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -85,6 +107,15 @@ export function SnippetForm({ initial, submitting, error, onSubmit, onCancel }: 
                 ))}
               </SelectContent>
             </Select>
+            {detectionFailed && (
+              <p
+                id={`${id}-language-hint`}
+                className="flex items-start gap-1.5 text-xs text-amber-700"
+              >
+                <CircleHelp className="mt-px size-3.5 shrink-0" />
+                Couldn&apos;t detect the language. Please choose it.
+              </p>
+            )}
           </div>
         </div>
 
