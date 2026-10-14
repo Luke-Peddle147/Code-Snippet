@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import type { Snippet, SnippetFormValues, SnippetInput } from "@/types/snippet";
 import { detectLanguage } from "../lib/detectLanguage";
+import { readSnippetFile } from "../lib/snippetFile";
 import { getInitialFormValues, isFormComplete, toSnippetInput } from "../lib/snippetForm";
 
 interface UseSnippetFormOptions {
@@ -11,17 +12,25 @@ interface UseSnippetFormOptions {
   onCancel: () => void;
 }
 
+type LanguageSource = "default" | "manual" | "file";
+
 const DETECT_DELAY_MS = 400;
 const ESCAPE_HANDLED_BY = '[role="listbox"]';
 
 export function useSnippetForm({ initial, submitting, onSubmit, onCancel }: UseSnippetFormOptions) {
   const [values, setValues] = useState<SnippetFormValues>(() => getInitialFormValues(initial));
-  const [languagePicked, setLanguagePicked] = useState(initial !== undefined);
+  const [languageSource, setLanguageSource] = useState<LanguageSource>(
+    initial ? "manual" : "default"
+  );
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [readingFile, setReadingFile] = useState(false);
+
+  const shouldDetect = languageSource === "default";
 
   const debouncedCode = useDebouncedValue(values.code, DETECT_DELAY_MS);
   const detection = useMemo(
-    () => (languagePicked ? null : detectLanguage(debouncedCode)),
-    [languagePicked, debouncedCode]
+    () => (shouldDetect ? detectLanguage(debouncedCode) : null),
+    [shouldDetect, debouncedCode]
   );
 
   const detectedLanguage = detection?.status === "detected" ? detection.language : null;
@@ -30,20 +39,45 @@ export function useSnippetForm({ initial, submitting, onSubmit, onCancel }: UseS
   const currentValues: SnippetFormValues = detectedLanguage
     ? { ...values, language: detectedLanguage }
     : values;
-  
 
   const setField = <K extends keyof SnippetFormValues>(field: K, value: SnippetFormValues[K]) => {
-    if (field === "language") setLanguagePicked(true);
+    if (field === "language") setLanguageSource("manual");
+    if (field === "code") setFileError(null);
     setValues((current) => ({ ...current, [field]: value }));
   };
 
-  const canSubmit = isFormComplete(currentValues) && !submitting;
+  const loadFile = async (file: File) => {
+    setFileError(null);
+    setReadingFile(true);
+    const result = await readSnippetFile(file);
+    setReadingFile(false);
+
+    if (result.error !== undefined) {
+      setFileError(result.error);
+      return;
+    }
+
+    const { code, title, language } = result.data;
+    setValues((current) => ({
+      ...current,
+      code,
+      title: current.title.trim() ? current.title : title,
+      language: language ?? current.language,
+    }));
+
+    if (language) setLanguageSource("file");
+    else if (languageSource === "file") setLanguageSource("default");
+  };
+
+  const rejectFile = (message: string) => setFileError(message);
+
+  const canSubmit = isFormComplete(currentValues) && !submitting && !readingFile;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!canSubmit) return;
 
-    const submitDetection = languagePicked ? null : detectLanguage(values.code);
+    const submitDetection = shouldDetect ? detectLanguage(values.code) : null;
     const language =
       submitDetection?.status === "detected" ? submitDetection.language : values.language;
 
@@ -69,7 +103,12 @@ export function useSnippetForm({ initial, submitting, onSubmit, onCancel }: UseS
     values: currentValues,
     detectedLanguage,
     detectionFailed,
+    languageFromFile: languageSource === "file",
+    fileError,
+    readingFile,
     setField,
+    loadFile,
+    rejectFile,
     canSubmit,
     handleSubmit,
     handleKeyDown,

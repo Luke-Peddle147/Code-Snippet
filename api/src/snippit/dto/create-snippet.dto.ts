@@ -12,6 +12,8 @@ import {
   type SnippetLanguage,
 } from '../snippet-languages.js';
 
+export const MAX_CODE_LENGTH = 512 * 1024;
+
 const trim = ({ value }: { value: unknown }) =>
   typeof value === 'string' ? value.trim() : value;
 
@@ -41,6 +43,9 @@ export class CreateSnippetDto {
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(MAX_CODE_LENGTH, {
+    message: 'code must be 512 KB or smaller',
+  })
   code!: string;
 
   @IsOptional()

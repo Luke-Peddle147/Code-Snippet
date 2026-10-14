@@ -43,6 +43,7 @@ for (const name of DETECTOR_NAMES) {
 }
 
 const MIN_CODE_LENGTH = 20;
+const MAX_SAMPLE_LENGTH = 5000;
 const MIN_RELEVANCE = 3;
 
 export type LanguageDetection =
@@ -61,7 +62,7 @@ const isJavaScriptFamilyTie = (first: string, second: string | undefined) =>
 export function detectLanguage(code: string): LanguageDetection | null {
   if (code.trim().length < MIN_CODE_LENGTH) return null;
 
-  const result = hljs.highlightAuto(code, DETECTOR_NAMES);
+  const result = hljs.highlightAuto(code.slice(0, MAX_SAMPLE_LENGTH), DETECTOR_NAMES);
   if (!isDetectorName(result.language) || result.relevance < MIN_RELEVANCE) return UNDETECTED;
 
   const runnerUp = result.secondBest;

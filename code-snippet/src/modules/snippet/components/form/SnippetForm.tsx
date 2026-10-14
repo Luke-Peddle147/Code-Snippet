@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { CircleHelp, Sparkles } from "lucide-react";
+import { CircleHelp, FileCode, Sparkles, Upload } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,10 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import { handleCodeKeyDown } from "@/lib/codeEdit";
+import { cn } from "@/lib/utils";
+import { useSnippetDropzone } from "../../hooks/useSnippetDropzone";
 import { useSnippetForm } from "../../hooks/useSnippetForm";
 import { LANGUAGES, type SnippetLanguage } from "../../lib/languages";
+import { MAX_FILE_LABEL } from "../../lib/snippetFile";
 import type { Snippet, SnippetInput } from "@/types/snippet";
 import { LanguageLabel } from "../LanguageLabel";
 
@@ -35,7 +37,12 @@ export function SnippetForm({ initial, submitting, error, onSubmit, onCancel }: 
     values,
     detectedLanguage,
     detectionFailed,
+    languageFromFile,
+    fileError,
+    readingFile,
     setField,
+    loadFile,
+    rejectFile,
     canSubmit,
     handleSubmit,
     handleKeyDown,
@@ -44,6 +51,11 @@ export function SnippetForm({ initial, submitting, error, onSubmit, onCancel }: 
     submitting,
     onSubmit,
     onCancel,
+  });
+  const { getRootProps, getInputProps, isDragActive, openFileDialog } = useSnippetDropzone({
+    onFile: (file) => void loadFile(file),
+    onReject: rejectFile,
+    disabled: readingFile,
   });
 
   return (
@@ -59,7 +71,7 @@ export function SnippetForm({ initial, submitting, error, onSubmit, onCancel }: 
         <p className="text-sm text-muted-foreground">
           {initial
             ? `Changes to “${initial.title}” are saved when you click Save.`
-            : "Give it a name you'll search for later."}
+            : "Give it a name you'll search for later, or upload a file."}
         </p>
       </header>
 
@@ -87,6 +99,12 @@ export function SnippetForm({ initial, submitting, error, onSubmit, onCancel }: 
                   Auto-detected
                 </span>
               )}
+              {languageFromFile && (
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <FileCode className="size-3" />
+                  From file
+                </span>
+              )}
             </div>
             <Select
               value={values.language}
@@ -95,7 +113,10 @@ export function SnippetForm({ initial, submitting, error, onSubmit, onCancel }: 
               <SelectTrigger
                 id={`${id}-language`}
                 aria-describedby={detectionFailed ? `${id}-language-hint` : undefined}
-                className={cn("w-full", detectionFailed && "border-amber-400 ring-[3px] ring-amber-400/20")}
+                className={cn(
+                  "w-full",
+                  detectionFailed && "border-amber-400 ring-[3px] ring-amber-400/20"
+                )}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -133,20 +154,54 @@ export function SnippetForm({ initial, submitting, error, onSubmit, onCancel }: 
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={`${id}-code`}>Code</Label>
-          <Textarea
-            id={`${id}-code`}
-            value={values.code}
-            onChange={(event) => setField("code", event.target.value)}
-            onKeyDown={handleCodeKeyDown}
-            required
-            rows={16}
-            spellCheck={false}
-            autoCapitalize="off"
-            autoCorrect="off"
-            placeholder="// paste or write your snippet here"
-            className="min-h-72 resize-y border-zinc-800 bg-zinc-950 font-mono text-[13px] leading-6 text-zinc-100 shadow-inner [tab-size:2] placeholder:text-zinc-500 focus-visible:border-zinc-600 focus-visible:ring-zinc-500/30"
-          />
+          <div className="flex items-center justify-between gap-2">
+            <Label htmlFor={`${id}-code`}>Code</Label>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={openFileDialog}
+              disabled={readingFile}
+            >
+              <Upload />
+              {readingFile ? "Reading…" : "Upload file"}
+            </Button>
+          </div>
+
+          <div className="relative" {...getRootProps()}>
+            <input {...getInputProps()} />
+            <Textarea
+              id={`${id}-code`}
+              value={values.code}
+              onChange={(event) => setField("code", event.target.value)}
+              onKeyDown={handleCodeKeyDown}
+              required
+              rows={16}
+              spellCheck={false}
+              autoCapitalize="off"
+              autoCorrect="off"
+              aria-describedby={`${id}-code-hint`}
+              placeholder="// paste, write or drop a file here"
+              className="min-h-72 resize-y border-zinc-800 bg-zinc-950 font-mono text-[13px] leading-6 text-zinc-100 shadow-inner [tab-size:2] placeholder:text-zinc-500 focus-visible:border-zinc-600 focus-visible:ring-zinc-500/30"
+            />
+            {isDragActive && (
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-zinc-500 bg-zinc-950/85 text-sm text-zinc-200">
+                <Upload className="size-5" />
+                Drop a file to load it
+              </div>
+            )}
+          </div>
+
+          {fileError ? (
+            <p id={`${id}-code-hint`} role="alert" className="text-xs text-destructive">
+              {fileError}
+            </p>
+          ) : (
+            <p id={`${id}-code-hint`} className="text-xs text-muted-foreground">
+              You can also drag a file onto the editor, or paste a copied file (up to{" "}
+              {MAX_FILE_LABEL}).
+            </p>
+          )}
         </div>
 
         {error && (
