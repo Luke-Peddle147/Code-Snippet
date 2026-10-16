@@ -7,6 +7,7 @@ import { SnippetDetail } from "./detail/SnippetDetail";
 import { SnippetForm } from "./form/SnippetForm";
 import { SnippetList } from "./list/SnippetList";
 import { SnippetToolbar } from "./toolbar/SnippetToolbar";
+import { TagFilterBar } from "./toolbar/TagFilterBar";
 
 export function SnippetLibrary() {
   const {
@@ -14,6 +15,7 @@ export function SnippetLibrary() {
     filters,
     selection,
     favorites,
+    tags,
     createState,
     updateState,
     deleteState,
@@ -26,6 +28,7 @@ export function SnippetLibrary() {
       return (
         <SnippetForm
           key="new"
+          availableTags={tags}
           submitting={createState.submitting}
           error={createState.error}
           onSubmit={actions.create}
@@ -39,6 +42,7 @@ export function SnippetLibrary() {
         <SnippetForm
           key={`edit-${selected.id}`}
           initial={selected}
+          availableTags={tags}
           submitting={updateState.submitting}
           error={updateState.error}
           onSubmit={actions.update}
@@ -55,6 +59,8 @@ export function SnippetLibrary() {
           favorite={favorites.isFavorite(selected)}
           onToggleFavorite={() => favorites.toggle(selected)}
           onEdit={actions.startEdit}
+          onTagClick={filters.toggleTag}
+          activeTags={filters.value.tags}
           onDelete={actions.remove}
           deleting={deleteState.deleting}
           deleteError={deleteState.error}
@@ -70,8 +76,17 @@ export function SnippetLibrary() {
       <SnippetToolbar
         filters={filters.value}
         onFiltersChange={filters.set}
+        tags={tags}
+        onToggleTag={filters.toggleTag}
+        onClearTags={filters.clearTags}
         onCreate={actions.startCreate}
         creating={mode === "create"}
+      />
+
+      <TagFilterBar
+        selected={filters.value.tags}
+        onRemove={filters.toggleTag}
+        onClear={filters.clearTags}
       />
 
       {favorites.error && (

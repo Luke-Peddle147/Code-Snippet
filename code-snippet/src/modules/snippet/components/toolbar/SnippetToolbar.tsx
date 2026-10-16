@@ -13,15 +13,27 @@ import {
 import { Toggle } from "@/components/ui/toggle";
 import { useSnippetToolbar, type UseSnippetToolbarOptions } from "../../hooks/useSnippetToolbar";
 import { LANGUAGES } from "../../lib/languages";
-import type { LanguageFilter } from "@/types/snippet";
+import type { LanguageFilter, TagSummary } from "@/types/snippet";
 import { LanguageLabel } from "../LanguageLabel";
+import { TagFilter } from "./TagFilter";
 
 interface SnippetToolbarProps extends UseSnippetToolbarOptions {
+  tags: TagSummary[];
+  onToggleTag: (tag: string) => void;
+  onClearTags: () => void;
   onCreate: () => void;
   creating: boolean;
 }
 
-export function SnippetToolbar({ filters, onFiltersChange, onCreate, creating }: SnippetToolbarProps) {
+export function SnippetToolbar({
+  filters,
+  onFiltersChange,
+  tags,
+  onToggleTag,
+  onClearTags,
+  onCreate,
+  creating,
+}: SnippetToolbarProps) {
   const { setSearch, setLanguage, setFavoritesOnly, handleSearchKeyDown } = useSnippetToolbar({
     filters,
     onFiltersChange,
@@ -55,6 +67,13 @@ export function SnippetToolbar({ filters, onFiltersChange, onCreate, creating }:
           ))}
         </SelectContent>
       </Select>
+
+      <TagFilter
+        tags={tags}
+        selected={filters.tags}
+        onToggle={onToggleTag}
+        onClear={onClearTags}
+      />
 
       <Toggle
         variant="outline"

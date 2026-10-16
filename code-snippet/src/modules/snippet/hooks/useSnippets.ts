@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Result } from "@/types/results";
-import type { Snippet } from "@/types/snippet";
+import type { Snippet, TagSummary } from "@/types/snippet";
 import { createSnippet, type CreateSnippetPayload } from "../mutations/CreateSnippet";
 import { deleteSnippet } from "../mutations/deleteSnippet";
 import { updateSnippet, type UpdateSnippetPayload } from "../mutations/updateSnippet";
 import { QUERY_KEY as SNIPPETS_KEY, getSnippetsOptions } from "../queries/getSnippets";
+import { QUERY_KEY as TAGS_KEY, getTagsOptions } from "../queries/getTags";
 
 function fromResult<T>(result: Result<T> | undefined) {
   if (!result) return { data: undefined, error: null };
@@ -14,7 +15,11 @@ function fromResult<T>(result: Result<T> | undefined) {
 
 function useInvalidateSnippets() {
   const queryClient = useQueryClient();
-  return () => queryClient.invalidateQueries({ queryKey: [SNIPPETS_KEY] });
+  return () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: [SNIPPETS_KEY] }),
+      queryClient.invalidateQueries({ queryKey: [TAGS_KEY] }),
+    ]);
 }
 
 function useSaveMutation<P, T>(mutationFn: (payload: P) => Promise<Result<T>>) {
@@ -48,6 +53,13 @@ export function useSnippets() {
     error,
     retry: () => void query.refetch(),
   };
+}
+
+const NO_TAGS: TagSummary[] = [];
+
+export function useTags() {
+  const query = useQuery(getTagsOptions());
+  return fromResult(query.data).data ?? NO_TAGS;
 }
 
 export function useCreateSnippet() {

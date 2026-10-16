@@ -28,12 +28,15 @@ import {
 } from "@/lib/syntaxHighlighter";
 import type { Snippet } from "@/types/snippet";
 import { LanguageLabel } from "../LanguageLabel";
+import { TagBadge } from "../TagBadge";
 
 interface SnippetDetailProps {
   snippet: Snippet;
   favorite: boolean;
   onToggleFavorite: () => void;
   onEdit: () => void;
+  onTagClick: (tag: string) => void;
+  activeTags: string[];
   onDelete: () => void;
   deleting: boolean;
   deleteError: string | null;
@@ -44,6 +47,8 @@ export function SnippetDetail({
   favorite,
   onToggleFavorite,
   onEdit,
+  onTagClick,
+  activeTags,
   onDelete,
   deleting,
   deleteError,
@@ -130,6 +135,19 @@ export function SnippetDetail({
 
         {snippet.description && (
           <p className="max-w-prose leading-relaxed text-foreground/80">{snippet.description}</p>
+        )}
+
+        {snippet.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {snippet.tags.map((tag) => (
+              <TagBadge
+                key={tag}
+                tag={tag}
+                active={activeTags.includes(tag)}
+                onClick={() => onTagClick(tag)}
+              />
+            ))}
+          </div>
         )}
       </header>
 

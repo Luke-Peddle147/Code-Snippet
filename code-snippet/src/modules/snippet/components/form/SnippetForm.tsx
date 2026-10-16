@@ -20,18 +20,27 @@ import { useSnippetDropzone } from "../../hooks/useSnippetDropzone";
 import { useSnippetForm } from "../../hooks/useSnippetForm";
 import { LANGUAGES, type SnippetLanguage } from "../../lib/languages";
 import { MAX_FILE_LABEL } from "../../lib/snippetFile";
-import type { Snippet, SnippetInput } from "@/types/snippet";
+import type { Snippet, SnippetInput, TagSummary } from "@/types/snippet";
 import { LanguageLabel } from "../LanguageLabel";
+import { TagInput } from "./TagInput";
 
 interface SnippetFormProps {
   initial?: Snippet;
+  availableTags: TagSummary[];
   submitting: boolean;
   error: string | null;
   onSubmit: (input: SnippetInput) => void | Promise<void>;
   onCancel: () => void;
 }
 
-export function SnippetForm({ initial, submitting, error, onSubmit, onCancel }: SnippetFormProps) {
+export function SnippetForm({
+  initial,
+  availableTags,
+  submitting,
+  error,
+  onSubmit,
+  onCancel,
+}: SnippetFormProps) {
   const id = useId();
   const {
     values,
@@ -150,6 +159,18 @@ export function SnippetForm({ initial, submitting, error, onSubmit, onCancel }: 
             onChange={(event) => setField("description", event.target.value)}
             maxLength={500}
             placeholder="What it does and when to use it"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor={`${id}-tags`}>
+            Tags <span className="font-normal text-muted-foreground">(optional)</span>
+          </Label>
+          <TagInput
+            id={`${id}-tags`}
+            tags={values.tags}
+            onChange={(tags) => setField("tags", tags)}
+            available={availableTags}
           />
         </div>
 

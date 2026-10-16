@@ -15,7 +15,7 @@ interface UseSnippetFormOptions {
 type LanguageSource = "default" | "manual" | "file";
 
 const DETECT_DELAY_MS = 400;
-const ESCAPE_HANDLED_BY = '[role="listbox"]';
+const ESCAPE_HANDLED_BY = '[role="listbox"], [cmdk-root]';
 
 export function useSnippetForm({ initial, submitting, onSubmit, onCancel }: UseSnippetFormOptions) {
   const [values, setValues] = useState<SnippetFormValues>(() => getInitialFormValues(initial));

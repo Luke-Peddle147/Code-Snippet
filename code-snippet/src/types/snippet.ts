@@ -7,6 +7,7 @@ export interface Snippet {
   language: string;
   code: string;
   isFavorite: boolean;
+  tags: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -16,6 +17,7 @@ export interface SnippetInput {
   description: string | null;
   language: SnippetLanguage;
   code: string;
+  tags: string[];
   isFavorite?: boolean;
 }
 
@@ -24,6 +26,12 @@ export interface SnippetFormValues {
   description: string;
   language: SnippetLanguage;
   code: string;
+  tags: string[];
+}
+
+export interface TagSummary {
+  name: string;
+  count: number;
 }
 
 export type LanguageFilter = SnippetLanguage | "all";
@@ -32,6 +40,7 @@ export interface SnippetFilters {
   search: string;
   language: LanguageFilter;
   favoritesOnly: boolean;
+  tags: string[];
 }
 
 export type PanelMode = "view" | "create" | "edit";

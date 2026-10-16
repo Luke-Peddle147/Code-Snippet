@@ -6,6 +6,7 @@ export const getInitialFormValues = (initial?: Snippet): SnippetFormValues => ({
   description: initial?.description ?? "",
   language: initial ? toSnippetLanguage(initial.language) : DEFAULT_LANGUAGE,
   code: initial?.code ?? "",
+  tags: initial?.tags ?? [],
 });
 
 export const isFormComplete = (values: SnippetFormValues): boolean =>
@@ -16,4 +17,5 @@ export const toSnippetInput = (values: SnippetFormValues): SnippetInput => ({
   description: values.description.trim() || null,
   language: values.language,
   code: values.code,
+  tags: values.tags,
 });

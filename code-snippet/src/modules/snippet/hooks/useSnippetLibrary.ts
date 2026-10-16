@@ -1,11 +1,13 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import type { PanelMode, SnippetFilters, SnippetInput } from "@/types/snippet";
 import { DEFAULT_FILTERS, filterSnippets, hasActiveFilters } from "../lib/filterSnippets";
+import { toggleTag } from "../lib/tags";
 import {
   useCreateSnippet,
   useDeleteSnippet,
   useSnippets,
+  useTags,
   useToggleFavorite,
   useUpdateSnippet,
 } from "./useSnippets";
@@ -18,6 +20,7 @@ export function useSnippetLibrary() {
   const updateSnippet = useUpdateSnippet();
   const deleteSnippet = useDeleteSnippet();
   const favorites = useToggleFavorite();
+  const tags = useTags();
 
   const [filters, setFilters] = useState<SnippetFilters>(DEFAULT_FILTERS);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -32,8 +35,9 @@ export function useSnippetLibrary() {
         search: appliedSearch,
         language: filters.language,
         favoritesOnly: filters.favoritesOnly,
+        tags: filters.tags,
       }),
-    [snippets, appliedSearch, filters.language, filters.favoritesOnly]
+    [snippets, appliedSearch, filters.language, filters.favoritesOnly, filters.tags]
   );
   const selected = snippets.find((snippet) => snippet.id === selectedId) ?? null;
 
@@ -87,7 +91,11 @@ export function useSnippetLibrary() {
       set: setFilters,
       clear: () => setFilters(DEFAULT_FILTERS),
       active: hasActiveFilters(filters),
+      toggleTag: (tag: string) =>
+        setFilters((current) => ({ ...current, tags: toggleTag(current.tags, tag) })),
+      clearTags: () => setFilters((current) => ({ ...current, tags: [] })),
     },
+    tags,
     selection: { selectedId, selected, mode },
     favorites,
     createState: { submitting: createSnippet.submitting, error: createSnippet.error },

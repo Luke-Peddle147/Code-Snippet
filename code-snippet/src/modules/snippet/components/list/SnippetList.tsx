@@ -10,6 +10,9 @@ import { cn } from "@/lib/utils";
 import { countLines } from "../../lib/languages";
 import type { Snippet } from "@/types/snippet";
 import { LanguageLabel } from "../LanguageLabel";
+import { TagBadge } from "../TagBadge";
+
+const MAX_LIST_TAGS = 3;
 
 interface SnippetListProps {
   snippets: Snippet[];
@@ -139,6 +142,18 @@ function SnippetListItem({ snippet, selected, favorite, onSelect, onToggleFavori
         <p className="truncate font-medium">{snippet.title}</p>
         {snippet.description && (
           <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{snippet.description}</p>
+        )}
+        {snippet.tags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {snippet.tags.slice(0, MAX_LIST_TAGS).map((tag) => (
+              <TagBadge key={tag} tag={tag} />
+            ))}
+            {snippet.tags.length > MAX_LIST_TAGS && (
+              <span className="px-1 text-xs text-muted-foreground">
+                +{snippet.tags.length - MAX_LIST_TAGS}
+              </span>
+            )}
+          </div>
         )}
         <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <LanguageLabel language={snippet.language} className="font-medium text-foreground/80" />
