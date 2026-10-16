@@ -1,16 +1,25 @@
 import { Transform } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
 } from 'class-validator';
 import {
   SNIPPET_LANGUAGES,
   type SnippetLanguage,
 } from '../snippet-languages.js';
+import {
+  MAX_TAG_LENGTH,
+  MAX_TAGS,
+  normalizeTags,
+  TAG_PATTERN,
+} from '../tag-rules.js';
 
 export const MAX_CODE_LENGTH = 512 * 1024;
 
@@ -51,4 +60,20 @@ export class CreateSnippetDto {
   @IsOptional()
   @IsBoolean()
   isFavorite?: boolean;
+
+  @Transform(({ value }) => normalizeTags(value))
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_TAGS, { message: `a snippet can have at most ${MAX_TAGS} tags` })
+  @IsString({ each: true })
+  @MaxLength(MAX_TAG_LENGTH, {
+    each: true,
+    message: `each tag must be ${MAX_TAG_LENGTH} characters or fewer`,
+  })
+  @Matches(TAG_PATTERN, {
+    each: true,
+    message:
+      'tags may only contain letters, numbers and + # . - and must start with a letter or number',
+  })
+  tags?: string[];
 }

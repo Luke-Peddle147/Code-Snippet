@@ -10,9 +10,9 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import type { Snippet } from '../generated/prisma/client.js';
 import { CreateSnippetDto } from './dto/create-snippet.dto.js';
 import { UpdateSnippetDto } from './dto/update-snippet.dto.js';
+import type { SnippetResponse } from './snippet-response.js';
 import { SnippetsService } from './snippets.service.js';
 
 @Controller('snippets')
@@ -20,17 +20,17 @@ export class SnippetsController {
   constructor(private readonly snippetsService: SnippetsService) {}
 
   @Get()
-  findAll(): Promise<Snippet[]> {
+  findAll(): Promise<SnippetResponse[]> {
     return this.snippetsService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Snippet> {
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<SnippetResponse> {
     return this.snippetsService.findOne(id);
   }
 
   @Post()
-  create(@Body() dto: CreateSnippetDto): Promise<Snippet> {
+  create(@Body() dto: CreateSnippetDto): Promise<SnippetResponse> {
     return this.snippetsService.create(dto);
   }
 
@@ -38,7 +38,7 @@ export class SnippetsController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateSnippetDto,
-  ): Promise<Snippet> {
+  ): Promise<SnippetResponse> {
     return this.snippetsService.update(id, dto);
   }
 
